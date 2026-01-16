@@ -51,6 +51,36 @@ export class WasmCallbacksRegistry {
 if (Symbol.dispose) WasmCallbacksRegistry.prototype[Symbol.dispose] = WasmCallbacksRegistry.prototype.free;
 
 /**
+ * @param {Computer} computer
+ * @returns {boolean}
+ */
+export function condition_n(computer) {
+    _assertClass(computer, Computer);
+    const ret = wasm.condition_n(computer.__wbg_ptr);
+    return ret !== 0;
+}
+
+/**
+ * @param {Computer} computer
+ * @returns {boolean}
+ */
+export function condition_p(computer) {
+    _assertClass(computer, Computer);
+    const ret = wasm.condition_p(computer.__wbg_ptr);
+    return ret !== 0;
+}
+
+/**
+ * @param {Computer} computer
+ * @returns {boolean}
+ */
+export function condition_z(computer) {
+    _assertClass(computer, Computer);
+    const ret = wasm.condition_z(computer.__wbg_ptr);
+    return ret !== 0;
+}
+
+/**
  * @param {string} program
  * @param {WasmCallbacksRegistry} callbacks
  * @returns {Computer}
