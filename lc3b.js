@@ -21,6 +21,64 @@ export class Computer {
 }
 if (Symbol.dispose) Computer.prototype[Symbol.dispose] = Computer.prototype.free;
 
+/**
+ * Result type for computer creation - wraps either a Computer or an error message
+ */
+export class ComputerResult {
+    static __wrap(ptr) {
+        ptr = ptr >>> 0;
+        const obj = Object.create(ComputerResult.prototype);
+        obj.__wbg_ptr = ptr;
+        ComputerResultFinalization.register(obj, obj.__wbg_ptr, obj);
+        return obj;
+    }
+    __destroy_into_raw() {
+        const ptr = this.__wbg_ptr;
+        this.__wbg_ptr = 0;
+        ComputerResultFinalization.unregister(this);
+        return ptr;
+    }
+    free() {
+        const ptr = this.__destroy_into_raw();
+        wasm.__wbg_computerresult_free(ptr, 0);
+    }
+    /**
+     * @returns {string | undefined}
+     */
+    error_message() {
+        const ret = wasm.computerresult_error_message(this.__wbg_ptr);
+        let v1;
+        if (ret[0] !== 0) {
+            v1 = getStringFromWasm0(ret[0], ret[1]).slice();
+            wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        }
+        return v1;
+    }
+    /**
+     * @returns {boolean}
+     */
+    is_err() {
+        const ret = wasm.computerresult_is_err(this.__wbg_ptr);
+        return ret !== 0;
+    }
+    /**
+     * @returns {boolean}
+     */
+    is_ok() {
+        const ret = wasm.computerresult_is_ok(this.__wbg_ptr);
+        return ret !== 0;
+    }
+    /**
+     * @returns {Computer}
+     */
+    unwrap_computer() {
+        const ptr = this.__destroy_into_raw();
+        const ret = wasm.computerresult_unwrap_computer(ptr);
+        return Computer.__wrap(ret);
+    }
+}
+if (Symbol.dispose) ComputerResult.prototype[Symbol.dispose] = ComputerResult.prototype.free;
+
 export class WasmCallbacksRegistry {
     static __wrap(ptr) {
         ptr = ptr >>> 0;
@@ -83,7 +141,7 @@ export function condition_z(computer) {
 /**
  * @param {string} program
  * @param {WasmCallbacksRegistry} callbacks
- * @returns {Computer}
+ * @returns {ComputerResult}
  */
 export function new_computer(program, callbacks) {
     const ptr0 = passStringToWasm0(program, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
@@ -91,7 +149,7 @@ export function new_computer(program, callbacks) {
     _assertClass(callbacks, WasmCallbacksRegistry);
     var ptr1 = callbacks.__destroy_into_raw();
     const ret = wasm.new_computer(ptr0, len0, ptr1);
-    return Computer.__wrap(ret);
+    return ComputerResult.__wrap(ret);
 }
 
 /**
@@ -256,6 +314,9 @@ function __wbg_get_imports() {
 const ComputerFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_computer_free(ptr >>> 0, 1));
+const ComputerResultFinalization = (typeof FinalizationRegistry === 'undefined')
+    ? { register: () => {}, unregister: () => {} }
+    : new FinalizationRegistry(ptr => wasm.__wbg_computerresult_free(ptr >>> 0, 1));
 const WasmCallbacksRegistryFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_wasmcallbacksregistry_free(ptr >>> 0, 1));
