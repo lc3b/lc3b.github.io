@@ -139,6 +139,18 @@ export function condition_z(computer) {
 }
 
 /**
+ * Returns the index (0-7) of the register modified by the last instruction,
+ * or -1 if no register was modified
+ * @param {Computer} computer
+ * @returns {number}
+ */
+export function last_modified_register(computer) {
+    _assertClass(computer, Computer);
+    const ret = wasm.last_modified_register(computer.__wbg_ptr);
+    return ret;
+}
+
+/**
  * @param {string} program
  * @param {WasmCallbacksRegistry} callbacks
  * @returns {ComputerResult}
