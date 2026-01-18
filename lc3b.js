@@ -1,176 +1,141 @@
 /* @ts-self-types="./lc3b.d.ts" */
 
-export class Computer {
-    static __wrap(ptr) {
-        ptr = ptr >>> 0;
-        const obj = Object.create(Computer.prototype);
-        obj.__wbg_ptr = ptr;
-        ComputerFinalization.register(obj, obj.__wbg_ptr, obj);
-        return obj;
-    }
-    __destroy_into_raw() {
-        const ptr = this.__wbg_ptr;
-        this.__wbg_ptr = 0;
-        ComputerFinalization.unregister(this);
-        return ptr;
-    }
-    free() {
-        const ptr = this.__destroy_into_raw();
-        wasm.__wbg_computer_free(ptr, 0);
-    }
-}
-if (Symbol.dispose) Computer.prototype[Symbol.dispose] = Computer.prototype.free;
-
 /**
- * Result type for computer creation - wraps either a Computer or an error message
+ * WASM-exposed computer wrapping Computer<BufferedIO, UIObserver>
  */
-export class ComputerResult {
-    static __wrap(ptr) {
-        ptr = ptr >>> 0;
-        const obj = Object.create(ComputerResult.prototype);
-        obj.__wbg_ptr = ptr;
-        ComputerResultFinalization.register(obj, obj.__wbg_ptr, obj);
-        return obj;
-    }
+export class WasmComputer {
     __destroy_into_raw() {
         const ptr = this.__wbg_ptr;
         this.__wbg_ptr = 0;
-        ComputerResultFinalization.unregister(this);
+        WasmComputerFinalization.unregister(this);
         return ptr;
     }
     free() {
         const ptr = this.__destroy_into_raw();
-        wasm.__wbg_computerresult_free(ptr, 0);
+        wasm.__wbg_wasmcomputer_free(ptr, 0);
+    }
+    clear_console() {
+        wasm.wasmcomputer_clear_console(this.__wbg_ptr);
     }
     /**
-     * @returns {string | undefined}
+     * @returns {boolean}
      */
-    error_message() {
-        const ret = wasm.computerresult_error_message(this.__wbg_ptr);
-        let v1;
-        if (ret[0] !== 0) {
-            v1 = getStringFromWasm0(ret[0], ret[1]).slice();
-            wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+    condition_n() {
+        const ret = wasm.wasmcomputer_condition_n(this.__wbg_ptr);
+        return ret !== 0;
+    }
+    /**
+     * @returns {boolean}
+     */
+    condition_p() {
+        const ret = wasm.wasmcomputer_condition_p(this.__wbg_ptr);
+        return ret !== 0;
+    }
+    /**
+     * @returns {boolean}
+     */
+    condition_z() {
+        const ret = wasm.wasmcomputer_condition_z(this.__wbg_ptr);
+        return ret !== 0;
+    }
+    /**
+     * @returns {string}
+     */
+    console_output() {
+        let deferred1_0;
+        let deferred1_1;
+        try {
+            const ret = wasm.wasmcomputer_console_output(this.__wbg_ptr);
+            deferred1_0 = ret[0];
+            deferred1_1 = ret[1];
+            return getStringFromWasm0(ret[0], ret[1]);
+        } finally {
+            wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
         }
-        return v1;
     }
     /**
      * @returns {boolean}
      */
-    is_err() {
-        const ret = wasm.computerresult_is_err(this.__wbg_ptr);
+    is_halted() {
+        const ret = wasm.wasmcomputer_is_halted(this.__wbg_ptr);
         return ret !== 0;
     }
     /**
-     * @returns {boolean}
+     * @returns {number}
      */
-    is_ok() {
-        const ret = wasm.computerresult_is_ok(this.__wbg_ptr);
-        return ret !== 0;
+    last_modified_register() {
+        const ret = wasm.wasmcomputer_last_modified_register(this.__wbg_ptr);
+        return ret;
     }
     /**
-     * @returns {Computer}
+     * @param {string} program
      */
-    unwrap_computer() {
-        const ptr = this.__destroy_into_raw();
-        const ret = wasm.computerresult_unwrap_computer(ptr);
-        return Computer.__wrap(ret);
+    load_assembly(program) {
+        const ptr0 = passStringToWasm0(program, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.wasmcomputer_load_assembly(this.__wbg_ptr, ptr0, len0);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
     }
-}
-if (Symbol.dispose) ComputerResult.prototype[Symbol.dispose] = ComputerResult.prototype.free;
-
-export class WasmCallbacksRegistry {
-    static __wrap(ptr) {
-        ptr = ptr >>> 0;
-        const obj = Object.create(WasmCallbacksRegistry.prototype);
-        obj.__wbg_ptr = ptr;
-        WasmCallbacksRegistryFinalization.register(obj, obj.__wbg_ptr, obj);
-        return obj;
+    constructor() {
+        const ret = wasm.wasmcomputer_new();
+        this.__wbg_ptr = ret >>> 0;
+        WasmComputerFinalization.register(this, this.__wbg_ptr, this);
+        return this;
     }
-    __destroy_into_raw() {
-        const ptr = this.__wbg_ptr;
-        this.__wbg_ptr = 0;
-        WasmCallbacksRegistryFinalization.unregister(this);
-        return ptr;
-    }
-    free() {
-        const ptr = this.__destroy_into_raw();
-        wasm.__wbg_wasmcallbacksregistry_free(ptr, 0);
+    next_instruction() {
+        wasm.wasmcomputer_next_instruction(this.__wbg_ptr);
     }
     /**
-     * @param {Function} hello
-     * @returns {WasmCallbacksRegistry}
+     * @returns {number}
      */
-    static new(hello) {
-        const ret = wasm.wasmcallbacksregistry_new(hello);
-        return WasmCallbacksRegistry.__wrap(ret);
+    program_counter() {
+        const ret = wasm.wasmcomputer_program_counter(this.__wbg_ptr);
+        return ret;
+    }
+    /**
+     * @param {string} ch
+     */
+    push_input(ch) {
+        const char0 = ch.codePointAt(0);
+        _assertChar(char0);
+        wasm.wasmcomputer_push_input(this.__wbg_ptr, char0);
+    }
+    /**
+     * @param {string} s
+     */
+    push_input_str(s) {
+        const ptr0 = passStringToWasm0(s, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        wasm.wasmcomputer_push_input_str(this.__wbg_ptr, ptr0, len0);
+    }
+    /**
+     * @param {number} addr
+     * @returns {number}
+     */
+    read_memory(addr) {
+        const ret = wasm.wasmcomputer_read_memory(this.__wbg_ptr, addr);
+        return ret;
+    }
+    /**
+     * @param {number} index
+     * @returns {number}
+     */
+    register(index) {
+        const ret = wasm.wasmcomputer_register(this.__wbg_ptr, index);
+        return ret;
+    }
+    /**
+     * @param {number} max_instructions
+     * @returns {number}
+     */
+    run(max_instructions) {
+        const ret = wasm.wasmcomputer_run(this.__wbg_ptr, max_instructions);
+        return ret >>> 0;
     }
 }
-if (Symbol.dispose) WasmCallbacksRegistry.prototype[Symbol.dispose] = WasmCallbacksRegistry.prototype.free;
-
-/**
- * @param {Computer} computer
- * @returns {boolean}
- */
-export function condition_n(computer) {
-    _assertClass(computer, Computer);
-    const ret = wasm.condition_n(computer.__wbg_ptr);
-    return ret !== 0;
-}
-
-/**
- * @param {Computer} computer
- * @returns {boolean}
- */
-export function condition_p(computer) {
-    _assertClass(computer, Computer);
-    const ret = wasm.condition_p(computer.__wbg_ptr);
-    return ret !== 0;
-}
-
-/**
- * @param {Computer} computer
- * @returns {boolean}
- */
-export function condition_z(computer) {
-    _assertClass(computer, Computer);
-    const ret = wasm.condition_z(computer.__wbg_ptr);
-    return ret !== 0;
-}
-
-/**
- * Returns the index (0-7) of the register modified by the last instruction,
- * or -1 if no register was modified
- * @param {Computer} computer
- * @returns {number}
- */
-export function last_modified_register(computer) {
-    _assertClass(computer, Computer);
-    const ret = wasm.last_modified_register(computer.__wbg_ptr);
-    return ret;
-}
-
-/**
- * @param {string} program
- * @param {WasmCallbacksRegistry} callbacks
- * @returns {ComputerResult}
- */
-export function new_computer(program, callbacks) {
-    const ptr0 = passStringToWasm0(program, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-    const len0 = WASM_VECTOR_LEN;
-    _assertClass(callbacks, WasmCallbacksRegistry);
-    var ptr1 = callbacks.__destroy_into_raw();
-    const ret = wasm.new_computer(ptr0, len0, ptr1);
-    return ComputerResult.__wrap(ret);
-}
-
-/**
- * @param {Computer} computer
- */
-export function next_instruction(computer) {
-    _assertClass(computer, Computer);
-    wasm.next_instruction(computer.__wbg_ptr);
-}
+if (Symbol.dispose) WasmComputer.prototype[Symbol.dispose] = WasmComputer.prototype.free;
 
 /**
  * @param {string} program
@@ -181,130 +146,18 @@ export function parse_program(program) {
     wasm.parse_program(ptr0, len0);
 }
 
-/**
- * @param {Computer} computer
- * @returns {number}
- */
-export function program_counter(computer) {
-    _assertClass(computer, Computer);
-    const ret = wasm.program_counter(computer.__wbg_ptr);
-    return ret;
-}
-
-/**
- * @param {Computer} computer
- * @param {number} addr
- * @returns {number}
- */
-export function read_memory(computer, addr) {
-    _assertClass(computer, Computer);
-    const ret = wasm.read_memory(computer.__wbg_ptr, addr);
-    return ret;
-}
-
-/**
- * @param {Computer} computer
- * @returns {number}
- */
-export function register0(computer) {
-    _assertClass(computer, Computer);
-    const ret = wasm.register0(computer.__wbg_ptr);
-    return ret;
-}
-
-/**
- * @param {Computer} computer
- * @returns {number}
- */
-export function register1(computer) {
-    _assertClass(computer, Computer);
-    const ret = wasm.register1(computer.__wbg_ptr);
-    return ret;
-}
-
-/**
- * @param {Computer} computer
- * @returns {number}
- */
-export function register2(computer) {
-    _assertClass(computer, Computer);
-    const ret = wasm.register2(computer.__wbg_ptr);
-    return ret;
-}
-
-/**
- * @param {Computer} computer
- * @returns {number}
- */
-export function register3(computer) {
-    _assertClass(computer, Computer);
-    const ret = wasm.register3(computer.__wbg_ptr);
-    return ret;
-}
-
-/**
- * @param {Computer} computer
- * @returns {number}
- */
-export function register4(computer) {
-    _assertClass(computer, Computer);
-    const ret = wasm.register4(computer.__wbg_ptr);
-    return ret;
-}
-
-/**
- * @param {Computer} computer
- * @returns {number}
- */
-export function register5(computer) {
-    _assertClass(computer, Computer);
-    const ret = wasm.register5(computer.__wbg_ptr);
-    return ret;
-}
-
-/**
- * @param {Computer} computer
- * @returns {number}
- */
-export function register6(computer) {
-    _assertClass(computer, Computer);
-    const ret = wasm.register6(computer.__wbg_ptr);
-    return ret;
-}
-
-/**
- * @param {Computer} computer
- * @returns {number}
- */
-export function register7(computer) {
-    _assertClass(computer, Computer);
-    const ret = wasm.register7(computer.__wbg_ptr);
-    return ret;
-}
-
 function __wbg_get_imports() {
     const import0 = {
         __proto__: null,
-        __wbg___wbindgen_debug_string_0bc8482c6e3508ae: function(arg0, arg1) {
-            const ret = debugString(arg1);
-            const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-            const len1 = WASM_VECTOR_LEN;
-            getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
-            getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
-        },
         __wbg___wbindgen_throw_be289d5034ed271b: function(arg0, arg1) {
             throw new Error(getStringFromWasm0(arg0, arg1));
         },
-        __wbg_call_389efe28435a9388: function() { return handleError(function (arg0, arg1) {
-            const ret = arg0.call(arg1);
-            return ret;
-        }, arguments); },
         __wbg_log_f55be62bef66528e: function(arg0, arg1) {
             console.log(getStringFromWasm0(arg0, arg1));
         },
-        __wbindgen_cast_0000000000000001: function(arg0) {
-            // Cast intrinsic for `F64 -> Externref`.
-            const ret = arg0;
+        __wbindgen_cast_0000000000000001: function(arg0, arg1) {
+            // Cast intrinsic for `Ref(String) -> Externref`.
+            const ret = getStringFromWasm0(arg0, arg1);
             return ret;
         },
         __wbindgen_init_externref_table: function() {
@@ -323,99 +176,12 @@ function __wbg_get_imports() {
     };
 }
 
-const ComputerFinalization = (typeof FinalizationRegistry === 'undefined')
+const WasmComputerFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
-    : new FinalizationRegistry(ptr => wasm.__wbg_computer_free(ptr >>> 0, 1));
-const ComputerResultFinalization = (typeof FinalizationRegistry === 'undefined')
-    ? { register: () => {}, unregister: () => {} }
-    : new FinalizationRegistry(ptr => wasm.__wbg_computerresult_free(ptr >>> 0, 1));
-const WasmCallbacksRegistryFinalization = (typeof FinalizationRegistry === 'undefined')
-    ? { register: () => {}, unregister: () => {} }
-    : new FinalizationRegistry(ptr => wasm.__wbg_wasmcallbacksregistry_free(ptr >>> 0, 1));
+    : new FinalizationRegistry(ptr => wasm.__wbg_wasmcomputer_free(ptr >>> 0, 1));
 
-function addToExternrefTable0(obj) {
-    const idx = wasm.__externref_table_alloc();
-    wasm.__wbindgen_externrefs.set(idx, obj);
-    return idx;
-}
-
-function _assertClass(instance, klass) {
-    if (!(instance instanceof klass)) {
-        throw new Error(`expected instance of ${klass.name}`);
-    }
-}
-
-function debugString(val) {
-    // primitive types
-    const type = typeof val;
-    if (type == 'number' || type == 'boolean' || val == null) {
-        return  `${val}`;
-    }
-    if (type == 'string') {
-        return `"${val}"`;
-    }
-    if (type == 'symbol') {
-        const description = val.description;
-        if (description == null) {
-            return 'Symbol';
-        } else {
-            return `Symbol(${description})`;
-        }
-    }
-    if (type == 'function') {
-        const name = val.name;
-        if (typeof name == 'string' && name.length > 0) {
-            return `Function(${name})`;
-        } else {
-            return 'Function';
-        }
-    }
-    // objects
-    if (Array.isArray(val)) {
-        const length = val.length;
-        let debug = '[';
-        if (length > 0) {
-            debug += debugString(val[0]);
-        }
-        for(let i = 1; i < length; i++) {
-            debug += ', ' + debugString(val[i]);
-        }
-        debug += ']';
-        return debug;
-    }
-    // Test for built-in
-    const builtInMatches = /\[object ([^\]]+)\]/.exec(toString.call(val));
-    let className;
-    if (builtInMatches && builtInMatches.length > 1) {
-        className = builtInMatches[1];
-    } else {
-        // Failed to match the standard '[object ClassName]'
-        return toString.call(val);
-    }
-    if (className == 'Object') {
-        // we're a user defined class or Object
-        // JSON.stringify avoids problems with cycles, and is generally much
-        // easier than looping through ownProperties of `val`.
-        try {
-            return 'Object(' + JSON.stringify(val) + ')';
-        } catch (_) {
-            return 'Object';
-        }
-    }
-    // errors
-    if (val instanceof Error) {
-        return `${val.name}: ${val.message}\n${val.stack}`;
-    }
-    // TODO we could test for more things here, like `Set`s and `Map`s.
-    return className;
-}
-
-let cachedDataViewMemory0 = null;
-function getDataViewMemory0() {
-    if (cachedDataViewMemory0 === null || cachedDataViewMemory0.buffer.detached === true || (cachedDataViewMemory0.buffer.detached === undefined && cachedDataViewMemory0.buffer !== wasm.memory.buffer)) {
-        cachedDataViewMemory0 = new DataView(wasm.memory.buffer);
-    }
-    return cachedDataViewMemory0;
+function _assertChar(c) {
+    if (typeof(c) === 'number' && (c >= 0x110000 || (c >= 0xD800 && c < 0xE000))) throw new Error(`expected a valid Unicode scalar value, found ${c}`);
 }
 
 function getStringFromWasm0(ptr, len) {
@@ -429,15 +195,6 @@ function getUint8ArrayMemory0() {
         cachedUint8ArrayMemory0 = new Uint8Array(wasm.memory.buffer);
     }
     return cachedUint8ArrayMemory0;
-}
-
-function handleError(f, args) {
-    try {
-        return f.apply(this, args);
-    } catch (e) {
-        const idx = addToExternrefTable0(e);
-        wasm.__wbindgen_exn_store(idx);
-    }
 }
 
 function passStringToWasm0(arg, malloc, realloc) {
@@ -477,6 +234,12 @@ function passStringToWasm0(arg, malloc, realloc) {
     return ptr;
 }
 
+function takeFromExternrefTable0(idx) {
+    const value = wasm.__wbindgen_externrefs.get(idx);
+    wasm.__externref_table_dealloc(idx);
+    return value;
+}
+
 let cachedTextDecoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: true });
 cachedTextDecoder.decode();
 const MAX_SAFARI_DECODE_BYTES = 2146435072;
@@ -510,7 +273,6 @@ let wasmModule, wasm;
 function __wbg_finalize_init(instance, module) {
     wasm = instance.exports;
     wasmModule = module;
-    cachedDataViewMemory0 = null;
     cachedUint8ArrayMemory0 = null;
     wasm.__wbindgen_start();
     return wasm;
