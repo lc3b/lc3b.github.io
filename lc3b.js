@@ -146,11 +146,59 @@ export function parse_program(program) {
     wasm.parse_program(ptr0, len0);
 }
 
+/**
+ * Returns the WASM linear memory size in bytes
+ * @returns {number}
+ */
+export function wasm_memory_size() {
+    const ret = wasm.wasm_memory_size();
+    return ret >>> 0;
+}
+
 function __wbg_get_imports() {
     const import0 = {
         __proto__: null,
+        __wbg___wbindgen_debug_string_0bc8482c6e3508ae: function(arg0, arg1) {
+            const ret = debugString(arg1);
+            const ptr1 = passStringToWasm0(ret, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            getDataViewMemory0().setInt32(arg0 + 4 * 1, len1, true);
+            getDataViewMemory0().setInt32(arg0 + 4 * 0, ptr1, true);
+        },
+        __wbg___wbindgen_memory_bd1fbcf21fbef3c8: function() {
+            const ret = wasm.memory;
+            return ret;
+        },
         __wbg___wbindgen_throw_be289d5034ed271b: function(arg0, arg1) {
             throw new Error(getStringFromWasm0(arg0, arg1));
+        },
+        __wbg_buffer_7b5f53e46557d8f1: function(arg0) {
+            const ret = arg0.buffer;
+            return ret;
+        },
+        __wbg_byteLength_7b03c17ff1e4037f: function(arg0) {
+            const ret = arg0.byteLength;
+            return ret;
+        },
+        __wbg_instanceof_ArrayBuffer_c367199e2fa2aa04: function(arg0) {
+            let result;
+            try {
+                result = arg0 instanceof ArrayBuffer;
+            } catch (_) {
+                result = false;
+            }
+            const ret = result;
+            return ret;
+        },
+        __wbg_instanceof_Memory_dc8c61e3f831ee37: function(arg0) {
+            let result;
+            try {
+                result = arg0 instanceof WebAssembly.Memory;
+            } catch (_) {
+                result = false;
+            }
+            const ret = result;
+            return ret;
         },
         __wbg_log_f55be62bef66528e: function(arg0, arg1) {
             console.log(getStringFromWasm0(arg0, arg1));
@@ -182,6 +230,79 @@ const WasmComputerFinalization = (typeof FinalizationRegistry === 'undefined')
 
 function _assertChar(c) {
     if (typeof(c) === 'number' && (c >= 0x110000 || (c >= 0xD800 && c < 0xE000))) throw new Error(`expected a valid Unicode scalar value, found ${c}`);
+}
+
+function debugString(val) {
+    // primitive types
+    const type = typeof val;
+    if (type == 'number' || type == 'boolean' || val == null) {
+        return  `${val}`;
+    }
+    if (type == 'string') {
+        return `"${val}"`;
+    }
+    if (type == 'symbol') {
+        const description = val.description;
+        if (description == null) {
+            return 'Symbol';
+        } else {
+            return `Symbol(${description})`;
+        }
+    }
+    if (type == 'function') {
+        const name = val.name;
+        if (typeof name == 'string' && name.length > 0) {
+            return `Function(${name})`;
+        } else {
+            return 'Function';
+        }
+    }
+    // objects
+    if (Array.isArray(val)) {
+        const length = val.length;
+        let debug = '[';
+        if (length > 0) {
+            debug += debugString(val[0]);
+        }
+        for(let i = 1; i < length; i++) {
+            debug += ', ' + debugString(val[i]);
+        }
+        debug += ']';
+        return debug;
+    }
+    // Test for built-in
+    const builtInMatches = /\[object ([^\]]+)\]/.exec(toString.call(val));
+    let className;
+    if (builtInMatches && builtInMatches.length > 1) {
+        className = builtInMatches[1];
+    } else {
+        // Failed to match the standard '[object ClassName]'
+        return toString.call(val);
+    }
+    if (className == 'Object') {
+        // we're a user defined class or Object
+        // JSON.stringify avoids problems with cycles, and is generally much
+        // easier than looping through ownProperties of `val`.
+        try {
+            return 'Object(' + JSON.stringify(val) + ')';
+        } catch (_) {
+            return 'Object';
+        }
+    }
+    // errors
+    if (val instanceof Error) {
+        return `${val.name}: ${val.message}\n${val.stack}`;
+    }
+    // TODO we could test for more things here, like `Set`s and `Map`s.
+    return className;
+}
+
+let cachedDataViewMemory0 = null;
+function getDataViewMemory0() {
+    if (cachedDataViewMemory0 === null || cachedDataViewMemory0.buffer.detached === true || (cachedDataViewMemory0.buffer.detached === undefined && cachedDataViewMemory0.buffer !== wasm.memory.buffer)) {
+        cachedDataViewMemory0 = new DataView(wasm.memory.buffer);
+    }
+    return cachedDataViewMemory0;
 }
 
 function getStringFromWasm0(ptr, len) {
@@ -273,6 +394,7 @@ let wasmModule, wasm;
 function __wbg_finalize_init(instance, module) {
     wasm = instance.exports;
     wasmModule = module;
+    cachedDataViewMemory0 = null;
     cachedUint8ArrayMemory0 = null;
     wasm.__wbindgen_start();
     return wasm;
