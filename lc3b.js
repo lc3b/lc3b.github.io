@@ -85,7 +85,10 @@ export class WasmComputer {
         return this;
     }
     next_instruction() {
-        wasm.wasmcomputer_next_instruction(this.__wbg_ptr);
+        const ret = wasm.wasmcomputer_next_instruction(this.__wbg_ptr);
+        if (ret[1]) {
+            throw takeFromExternrefTable0(ret[0]);
+        }
     }
     /**
      * @returns {number}
@@ -132,7 +135,10 @@ export class WasmComputer {
      */
     run(max_instructions) {
         const ret = wasm.wasmcomputer_run(this.__wbg_ptr, max_instructions);
-        return ret >>> 0;
+        if (ret[2]) {
+            throw takeFromExternrefTable0(ret[1]);
+        }
+        return ret[0] >>> 0;
     }
 }
 if (Symbol.dispose) WasmComputer.prototype[Symbol.dispose] = WasmComputer.prototype.free;
